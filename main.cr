@@ -46,7 +46,7 @@ end
 post "/webhook" do |env|
     name = env.params.json["firstName"].as(String)
     id = env.params.json["Id"].as(String)
-    updated = set_world({id: id, firstName: name)})
+    updated = set_world({id: id, firstName: name})
     env.response.content_type = CONTENT::JSON
     updated.to_json
 end
