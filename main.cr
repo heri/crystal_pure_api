@@ -4,7 +4,8 @@ require "pg"
 # Compose Objects (like Hash) to have a to_json method
 require "json/to_json"
 
-APPDB = DB.open(ENV["DATABASE_URL"])
+# DB pooling for performance
+APPDB = DB.open(ENV["DATABASE_URL"], max_pool_size: 10)
 
 class CONTENT
   UTF8  = "; charset=UTF-8"
@@ -15,7 +16,6 @@ end
 
 private def set_user(user)
   APPDB.exec("UPDATE world SET firstName = $1 WHERE id = $2", user[:firstName], user[:id])
-  world
 end
 
 private def users
@@ -56,6 +56,8 @@ Kemal.config do |cfg|
   cfg.serve_static = false
   cfg.logging = false
   cfg.powered_by_header = false
+  cfg.server.not_nil!.bind_tcp(cfg.host_binding, cfg.port, reuse_port: true)
+  cfg.concurrency = 4
 end
 
 Kemal.run { |cfg| cfg.server.not_nil!.bind_tcp(cfg.host_binding, cfg.port, reuse_port: true) }
